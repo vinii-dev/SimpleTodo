@@ -1,0 +1,6 @@
+services:
+  simpletododb:
+    image: mcr.microsoft.com/mssql/server
+
+volumes:
+  db_volume:
