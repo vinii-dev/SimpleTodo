@@ -63,6 +63,7 @@ public static class DependencyInjection
     private static IServiceCollection RegisterRepositories(this IServiceCollection services)
     {
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<ITodoItemRepository, TodoItemRepository>();
 
         return services;
     }

@@ -18,6 +18,11 @@ public class User : Entity
     public string Password { get; } = string.Empty;
 
     /// <summary>
+    /// Gets the collection of to-do items associated with the user.
+    /// </summary>
+    public ICollection<TodoItem> TodoItems { get; } = [];
+
+    /// <summary>
     /// EF Core requires a parameterless constructor for the entity to be able to create it.
     /// </summary>
     private User() { }
@@ -35,7 +40,6 @@ public class User : Entity
 
         if (string.IsNullOrWhiteSpace(hashedPassword))
             throw new ArgumentException("Password cannot be null or whitespace.", nameof(hashedPassword));
-
 
         Username = username;
         Password = hashedPassword;

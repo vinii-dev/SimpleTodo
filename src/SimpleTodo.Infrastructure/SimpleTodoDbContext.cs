@@ -6,6 +6,7 @@ namespace SimpleTodo.Infrastructure;
 public class SimpleTodoDbContext(DbContextOptions<SimpleTodoDbContext> options) : DbContext(options)
 {
     public DbSet<User> Users { get; set; }
+    public DbSet<TodoItem> TodoItems { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

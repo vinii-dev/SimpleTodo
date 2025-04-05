@@ -1,4 +1,5 @@
-﻿using TestCommon.Consts;
+﻿using SimpleTodo.Domain.Entities;
+using TestCommon.Consts;
 using TestCommon.Factory;
 
 namespace SimpleTodo.Domain.Tests.Entities;
@@ -9,7 +10,7 @@ public class UserTests
     public void Constructor_ValidParameters_CreatesUser()
     {
         // Act
-        var user = UserFactory.CreateUser(UserConsts.Username, UserConsts.HashedPassword);
+        var user = new User(UserConsts.Username, UserConsts.HashedPassword);
 
         // Assert
         Assert.Equal(UserConsts.Username, user.Username);
@@ -23,7 +24,7 @@ public class UserTests
     public void Constructor_UsernameWhitespaceOrNull_ThrowsArgumentException(string? username)
     {
         // Arrange
-        Action instantiateUser = () => UserFactory.CreateUser(username!, UserConsts.HashedPassword);
+        Action instantiateUser = () => new User(username!, UserConsts.HashedPassword);
 
         // Act & Assert
         Assert.Throws<ArgumentException>(instantiateUser);
@@ -36,7 +37,7 @@ public class UserTests
     public void Constructor_PasswordWhitespaceOrNull_ThrowsArgumentException(string? hashedPassword)
     {
         // Arrange
-        Action instantiateUser = () => UserFactory.CreateUser(UserConsts.Username, hashedPassword!);
+        Action instantiateUser = () => new User(UserConsts.Username, hashedPassword!);
 
         // Act & Assert
         Assert.Throws<ArgumentException>(instantiateUser);

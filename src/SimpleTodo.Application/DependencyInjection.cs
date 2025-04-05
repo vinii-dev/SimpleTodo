@@ -14,8 +14,7 @@ public static class DependencyInjection
     /// <returns>The updated <see cref="IServiceCollection"/> with the application services.</returns>
     public static IServiceCollection AddApplicationLayer(this IServiceCollection services)
     {
-        return services
-            .AddServices();
+        return services.AddServices();
     }
 
     /// <summary>
@@ -26,6 +25,7 @@ public static class DependencyInjection
     private static IServiceCollection AddServices(this IServiceCollection services)
     {
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<ITodoItemService, TodoItemService>();
 
         return services;
     }

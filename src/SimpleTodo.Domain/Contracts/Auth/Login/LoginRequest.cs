@@ -4,10 +4,8 @@ using System.ComponentModel.DataAnnotations;
 namespace SimpleTodo.Domain.Contracts.Auth.Login;
 
 public record LoginRequest(
-    [Required]
-    [SwaggerSchema(Description = "The user's username.", Nullable = false)]
+    [SwaggerSchema("The user's username.", Nullable = false), Required]
     string Username,
 
-    [Required]
-    [SwaggerSchema(Description = "The user's password.", Nullable = false)]
+    [SwaggerSchema("The user's password.", Nullable = false), Required]
     string Password);

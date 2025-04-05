@@ -10,15 +10,14 @@ builder.Services.AddControllers();
 
 builder.Services.AddSwaggerDocumentation();
 
-builder.Services.AddAuthorization();
-builder.Services.AddAuthentication();
-
+builder.Services.AddAuth(builder.Configuration);
 builder.Services.AddApplicationLayer();
 builder.Services.AddInfrastructureLayer(builder.Configuration);
 
 builder.Services.Configure<TokenOptions>(
     builder.Configuration.GetSection(TokenOptions.PATH));
 
+builder.Services.AddProblemDetails();
 
 //
 var app = builder.Build();

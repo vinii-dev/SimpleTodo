@@ -65,10 +65,10 @@ public class PasswordHasherTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
-    public void Hash_InvalidInput_Throws(string input)
+    public void Hash_InvalidInput_Throws(string? input)
     {
         // Arrange
-        Action hash = () => _passwordHasher.Hash(input);
+        Action hash = () => _passwordHasher.Hash(input!);
         
         // Act & Assert
         Assert.Throws<ArgumentException>(hash);
