@@ -3,15 +3,17 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SimpleTodo.Domain.Interfaces.Repositories;
+using SimpleTodo.Domain.Interfaces.Services;
 using SimpleTodo.Infrastructure.Interceptors;
 using SimpleTodo.Infrastructure.Repositories;
+using SimpleTodo.Infrastructure.Services;
 
 namespace SimpleTodo.Infrastructure;
 
 public static class DependencyInjection
 {
     /// <summary>
-    /// Adds the infrastructure layer to the service collection, including database context, custom interceptors, and repositories.
+    /// Adds the infrastructure layer to the service collection, including database context, custom interceptors, repositories, and services.
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <param name="configuration">The application configuration containing the connection string.</param>
@@ -21,7 +23,8 @@ public static class DependencyInjection
     {
         return services
             .SetupDbContext(configuration)
-            .RegisterRepositories();
+            .RegisterRepositories()
+            .RegisterServices();
     }
 
     /// <summary>
@@ -60,6 +63,20 @@ public static class DependencyInjection
     private static IServiceCollection RegisterRepositories(this IServiceCollection services)
     {
         services.AddScoped<IUserRepository, UserRepository>();
+
+        return services;
+    }
+
+    /// <summary>
+    /// Registers services in the dependency injection container.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <returns>The updated <see cref="IServiceCollection"/> with registered services.</returns>
+    private static IServiceCollection RegisterServices(this IServiceCollection services)
+    {
+        services.AddSingleton(TimeProvider.System);
+        services.AddSingleton<ITokenGenerator, TokenGenerator>();
+        services.AddSingleton<IPasswordHasher, PasswordHasher>();
 
         return services;
     }
