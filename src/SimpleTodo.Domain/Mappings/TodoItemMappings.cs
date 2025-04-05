@@ -11,6 +11,7 @@ public static class TodoItemMappings
             todoItem.Id,
             todoItem.Title,
             todoItem.Description,
+            todoItem.IsCompleted,
             todoItem.CreatedAt);
     }
 

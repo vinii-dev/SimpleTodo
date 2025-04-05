@@ -62,7 +62,7 @@ public class TodoItemRepository(SimpleTodoDbContext dbContext) : ITodoItemReposi
     /// </summary>
     /// <param name="todoItem">The <see cref="TodoItem"/> instance to be removed.</param>
     /// <param name="cancellationToken">Cancellation token for the operation.</param>
-    public async Task Remove(TodoItem todoItem, CancellationToken cancellationToken = default)
+    public async Task RemoveAsync(TodoItem todoItem, CancellationToken cancellationToken = default)
     {
         todoItems.Remove(todoItem);
         await dbContext.SaveChangesAsync(cancellationToken);
@@ -74,6 +74,6 @@ public class TodoItemRepository(SimpleTodoDbContext dbContext) : ITodoItemReposi
     /// <param name="id">The ID of the <see cref="TodoItem"/> to retrieve.</param>
     /// <param name="cancellationToken">Cancellation token for the operation.</param>
     /// <returns>A task representing the asynchronous operation, with a result of the <see cref="TodoItem"/> if found, or null if not.</returns>
-    public Task<TodoItem?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
+    public Task<TodoItem?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         => todoItems.SingleOrDefaultAsync(ti => ti.Id == id, cancellationToken);
 }

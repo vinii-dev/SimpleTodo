@@ -1,10 +1,12 @@
 ﻿using NSubstitute;
+using SimpleTodo.Application.Exceptions.Auth;
 using SimpleTodo.Application.Services;
 using SimpleTodo.Domain.Contracts.Auth.Login;
 using SimpleTodo.Domain.Contracts.Auth.Register;
 using SimpleTodo.Domain.Entities;
 using SimpleTodo.Domain.Interfaces.Repositories;
 using SimpleTodo.Domain.Interfaces.Services;
+using System.Security.Authentication;
 using TestCommon.Consts;
 
 namespace SimpleTodo.Application.Tests.Services;
@@ -32,7 +34,7 @@ public class AuthServiceTests
     }
 
     [Fact]
-    public async System.Threading.Tasks.Task LoginAsync_ValidCredentials_ReturnGeneratedToken()
+    public async Task LoginAsync_ValidCredentials_ReturnGeneratedToken()
     {
         // Arrange
         var request = new LoginRequest(UserConsts.Username, Password);
@@ -56,21 +58,21 @@ public class AuthServiceTests
     }
 
     [Fact]
-    public async System.Threading.Tasks.Task LoginAsync_UserNotFound_ThrowsInvalidOperationException()
+    public async Task LoginAsync_UserNotFound_ThrowsInvalidCredentialException()
     {
         // Arrange
         var request = new LoginRequest(UserConsts.Username, HashedPassword);
         _userRepositoryMock.GetByUsernameAsync(request.Username, Arg.Any<CancellationToken>())
             .Returns((User?)null);
 
-        Func<System.Threading.Tasks.Task> loginAsync = async () => await _authService.LoginAsync(request, CancellationToken.None);
+        Func<Task> loginAsync = async () => await _authService.LoginAsync(request, CancellationToken.None);
 
         // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(loginAsync);
+        await Assert.ThrowsAsync<InvalidCredentialException>(loginAsync);
     }
 
     [Fact]
-    public async System.Threading.Tasks.Task LoginAsync_InvalidPassword_ThrowsInvalidOperationException()
+    public async Task LoginAsync_InvalidPassword_ThrowsInvalidCredentialException()
     {
         // Arrange
         var request = new LoginRequest(UserConsts.Username, HashedPassword);
@@ -82,14 +84,14 @@ public class AuthServiceTests
         _passwordHasherMock.Verify(request.Password, user.Password)
             .Returns(false);
 
-        Func<System.Threading.Tasks.Task> loginAsync = async () => await _authService.LoginAsync(request, CancellationToken.None);
+        Func<Task> loginAsync = async () => await _authService.LoginAsync(request, CancellationToken.None);
 
         // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(loginAsync);
+        await Assert.ThrowsAsync<InvalidCredentialException>(loginAsync);
     }
 
     [Fact]
-    public async System.Threading.Tasks.Task RegisterAsync_ValidRequest_CreateUser()
+    public async Task RegisterAsync_ValidRequest_CreateUser()
     {
         // Arrange
         var request = new RegisterRequest(UserConsts.Username, HashedPassword);
@@ -111,7 +113,7 @@ public class AuthServiceTests
     }
 
     [Fact]
-    public async System.Threading.Tasks.Task RegisterAsync_UserExists_ThrowsInvalidOperationException()
+    public async Task RegisterAsync_UserExists_ThrowsUsernameAlreadyInUseException()
     {
         // Arrange
         var request = new RegisterRequest(UserConsts.Username, HashedPassword);
@@ -120,10 +122,10 @@ public class AuthServiceTests
         _userRepositoryMock.GetByUsernameAsync(request.Username, Arg.Any<CancellationToken>())
             .Returns(existingUser);
 
-        Func<System.Threading.Tasks.Task> registerAsync = () => _authService.RegisterAsync(request, CancellationToken.None);
+        Func<Task> registerAsync = () => _authService.RegisterAsync(request, CancellationToken.None);
 
         // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(registerAsync);
+        await Assert.ThrowsAsync<UsernameAlreadyInUseException>(registerAsync);
     }
 }
 

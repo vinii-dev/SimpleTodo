@@ -89,7 +89,7 @@ public class TodoItemService(ITodoItemRepository todoItemRepository, IUserReposi
         if (todoItem == null || todoItem.UserId != userId)
             throw new TodoItemNotFoundException();
 
-        await todoItemRepository.Remove(todoItem, cancellationToken);
+        await todoItemRepository.RemoveAsync(todoItem, cancellationToken);
     }
 
     /// <summary>
@@ -110,7 +110,7 @@ public class TodoItemService(ITodoItemRepository todoItemRepository, IUserReposi
         if (todoItem == null || todoItem.UserId != userId)
             throw new TodoItemNotFoundException();
 
-        todoItem.Update(todoItem.Title, todoItem.Description);
+        todoItem.Update(itemUpdateDto.Title, itemUpdateDto.Description);
         await todoItemRepository.UpdateAsync(todoItem, cancellationToken);
     }
 

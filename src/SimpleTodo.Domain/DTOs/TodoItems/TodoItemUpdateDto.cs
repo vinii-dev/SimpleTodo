@@ -9,4 +9,4 @@ public record TodoItemUpdateDto(
     string Title,
 
     [SwaggerSchema("Description of the Todo item"), Required]
-    string Desription);
+    string Description);

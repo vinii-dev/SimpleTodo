@@ -23,7 +23,7 @@ public interface ITodoItemRepository
     /// <param name="id">The ID of the TodoItem to retrieve.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>A task representing the asynchronous operation, with a result of the TodoItem if found, or null if not.</returns>
-    Task<TodoItem?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
+    Task<TodoItem?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves a paginated list of todoitems for a specific user.
@@ -40,7 +40,7 @@ public interface ITodoItemRepository
     /// <param name="todoItem">The TodoItem to remove.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
-    Task Remove(TodoItem todoItem, CancellationToken cancellationToken = default);
+    Task RemoveAsync(TodoItem todoItem, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Updates a TodoItem.
