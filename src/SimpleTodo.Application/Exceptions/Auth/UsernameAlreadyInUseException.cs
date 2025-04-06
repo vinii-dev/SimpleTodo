@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace SimpleTodo.Application.Exceptions.Auth;
+﻿namespace SimpleTodo.Application.Exceptions.Auth;
 
 public class UsernameAlreadyInUseException : Exception
 {

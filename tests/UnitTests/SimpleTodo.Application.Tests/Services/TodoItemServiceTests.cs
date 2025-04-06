@@ -1,12 +1,12 @@
 ﻿using NSubstitute;
-using SimpleTodo.Application.Exceptions.TodoItem;
-using SimpleTodo.Application.Exceptions.User;
 using SimpleTodo.Application.Services;
 using SimpleTodo.Domain.Common;
 using SimpleTodo.Domain.Contracts.Pagination;
 using SimpleTodo.Domain.DTOs.TodoItems;
 using SimpleTodo.Domain.Entities;
+using SimpleTodo.Domain.Errors;
 using SimpleTodo.Domain.Interfaces.Repositories;
+using TestCommon.Asserts;
 using TestCommon.Consts;
 using TestCommon.Factory;
 
@@ -84,24 +84,29 @@ public class TodoItemServiceTests
         var result = await _todoItemService.GetByIdAsync(UserId, todoItemId);
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Equal(todoItem.Title, result!.Title);
-        Assert.Equal(todoItem.Description, result!.Description);
-        Assert.Equal(todoItem.IsCompleted, result!.IsCompleted);
-        Assert.Equal(todoItem.Id, result!.Id);
+        Assert.False(result.IsError);
+
+        var createdTodoItem = result.Value;
+        Assert.NotNull(createdTodoItem);
+        Assert.Equal(todoItem.Title, createdTodoItem!.Title);
+        Assert.Equal(todoItem.Description, createdTodoItem!.Description);
+        Assert.Equal(todoItem.IsCompleted, createdTodoItem!.IsCompleted);
+        Assert.Equal(todoItem.Id, createdTodoItem!.Id);
     }
 
     [Fact]
-    public async Task GetByIdAsync_UserNotExists_ThrowsUserNotFoundException()
+    public async Task GetByIdAsync_UserNotExists_ReturnsUserNotFoundError()
     {
         // Arrange
         var todoItemId = Guid.NewGuid();
         _userRepositoryMock.ExistsAsync(UserId, Arg.Any<CancellationToken>())
             .Returns(false);
 
-        // Act & Assert
-        await Assert.ThrowsAsync<UserNotFoundException>(
-            () => _todoItemService.GetByIdAsync(UserId, todoItemId));
+        // Act
+        var result = await _todoItemService.GetByIdAsync(UserId, todoItemId);
+
+        // Assert
+        ErrorOrAssert.IsError(result, UserErrors.NotFound);
     }
 
     [Fact]
@@ -119,11 +124,11 @@ public class TodoItemServiceTests
         var result = await _todoItemService.GetByIdAsync(UserId, todoItemId);
 
         // Assert
-        Assert.Null(result);
+        ErrorOrAssert.IsError(result, TodoItemErrors.NotFound);
     }
 
     [Fact]
-    public async Task GetByIdAsync_ItemBelongsToDifferentUser_ReturnsNull()
+    public async Task GetByIdAsync_ItemBelongsToDifferentUser_ReturnsNotFoundTodoItemError()
     {
         // Arrange
         var otherUserId = Guid.NewGuid();
@@ -139,7 +144,7 @@ public class TodoItemServiceTests
         var result = await _todoItemService.GetByIdAsync(UserId, todoItemId);
 
         // Assert
-        Assert.Null(result);
+        ErrorOrAssert.IsError(result, TodoItemErrors.NotFound);
     }
 
     [Fact]
@@ -155,12 +160,13 @@ public class TodoItemServiceTests
         var result = await _todoItemService.CreateAsync(UserId, createDto);
 
         // Assert
+        Assert.False(result.IsError);
         await _todoItemRepositoryMock.Received(1).CreateAsync(
             Arg.Is<TodoItem>(t => t.Title == createDto.Title && t.Description == createDto.Description));
     }
 
     [Fact]
-    public async Task CreateAsync_UserNotExists_ThrowsUserNotFoundException()
+    public async Task CreateAsync_UserNotExists_ReturnsNotFoundUserError()
     {
         // Arrange
         var createDto = new TodoItemCreateDto(TodoItemConsts.Title, TodoItemConsts.Description);
@@ -168,9 +174,11 @@ public class TodoItemServiceTests
         _userRepositoryMock.ExistsAsync(UserId)
             .Returns(false);
 
-        // Act & Assert
-        await Assert.ThrowsAsync<UserNotFoundException>(
-            () => _todoItemService.CreateAsync(UserId, createDto));
+        // Act
+        var result = await _todoItemService.CreateAsync(UserId, createDto);
+
+        // Assert
+        ErrorOrAssert.IsError(result, UserErrors.NotFound);
     }
 
     [Fact]
@@ -186,27 +194,30 @@ public class TodoItemServiceTests
             .Returns(todoItem);
 
         // Act
-        await _todoItemService.RemoveAsync(UserId, todoItemId);
+        var result = await _todoItemService.RemoveAsync(UserId, todoItemId);
 
         // Assert
+        Assert.False(result.IsError);
         await _todoItemRepositoryMock.Received(1).RemoveAsync(todoItem);
     }
 
     [Fact]
-    public async Task RemoveAsync_UserNotExists_ThrowsUserNotFoundException()
+    public async Task RemoveAsync_UserNotExists_ReturnsNotFoundUserError()
     {
         // Arrange
         var todoItemId = Guid.NewGuid();
         _userRepositoryMock.ExistsAsync(UserId)
             .Returns(false);
 
-        // Act & Assert
-        await Assert.ThrowsAsync<UserNotFoundException>(
-            () => _todoItemService.RemoveAsync(UserId, todoItemId));
+        // Act
+        var result = await _todoItemService.RemoveAsync(UserId, todoItemId);
+
+        // Assert
+        ErrorOrAssert.IsError(result, UserErrors.NotFound);
     }
 
     [Fact]
-    public async Task RemoveAsync_ItemNotExists_ThrowsTodoItemNotFoundException()
+    public async Task RemoveAsync_ItemNotExists_ReturnNotFoundTodoItemError()
     {
         // Arrange
         var todoItemId = Guid.NewGuid();
@@ -217,13 +228,15 @@ public class TodoItemServiceTests
         _todoItemRepositoryMock.GetByIdAsync(todoItemId)
             .Returns((TodoItem?)null);
 
-        // Act & Assert
-        await Assert.ThrowsAsync<TodoItemNotFoundException>(
-            () => _todoItemService.RemoveAsync(UserId, todoItemId));
+        // Act
+        var result = await _todoItemService.RemoveAsync(UserId, todoItemId);
+
+        // Assert
+        ErrorOrAssert.IsError(result, TodoItemErrors.NotFound);
     }
 
     [Fact]
-    public async Task RemoveAsync_ItemBelongsToDifferentUser_ThrowsTodoItemNotFoundException()
+    public async Task RemoveAsync_ItemBelongsToDifferentUser_ReturnNotFoundTodoItemError()
     {
         // Arrange
         var otherUserId = Guid.NewGuid();
@@ -235,9 +248,11 @@ public class TodoItemServiceTests
         _todoItemRepositoryMock.GetByIdAsync(todoItemId)
             .Returns(todoItem);
 
-        // Act & Assert
-        await Assert.ThrowsAsync<TodoItemNotFoundException>(
-            () => _todoItemService.RemoveAsync(UserId, todoItemId));
+        // Act
+        var result = await _todoItemService.RemoveAsync(UserId, todoItemId);
+
+        // Assert
+        ErrorOrAssert.IsError(result, TodoItemErrors.NotFound);
     }
 
     [Fact]
@@ -257,9 +272,10 @@ public class TodoItemServiceTests
             .Returns(todoItem);
 
         // Act
-        await _todoItemService.UpdateAsync(UserId, todoItemId, updateDto);
+        var result = await _todoItemService.UpdateAsync(UserId, todoItemId, updateDto);
 
         // Assert
+        Assert.False(result.IsError);
         Assert.Equal(updateDto.Title, todoItem.Title);
         Assert.Equal(updateDto.Description, todoItem.Description);
         await _todoItemRepositoryMock.Received(1).UpdateAsync(todoItem);
@@ -273,7 +289,7 @@ public class TodoItemServiceTests
         // Arrange
         var todoItem = TodoItemFactory.CreateTodoItem(userId: UserId, isCompleted: originalIsCompleted);
         var todoItemId = todoItem.Id;
-        var patchDto = new TodoItemPatch(IsCompleted: patchIsCompleted );
+        var patchDto = new TodoItemPatch(IsCompleted: patchIsCompleted);
 
         _userRepositoryMock.ExistsAsync(UserId)
             .Returns(true);
@@ -282,9 +298,10 @@ public class TodoItemServiceTests
             .Returns(todoItem);
 
         // Act
-        await _todoItemService.PatchAsync(UserId, todoItemId, patchDto);
+        var result = await _todoItemService.PatchAsync(UserId, todoItemId, patchDto);
 
         // Assert
+        Assert.False(result.IsError);
         Assert.Equal(todoItem.IsCompleted, patchIsCompleted);
         await _todoItemRepositoryMock.Received(1).UpdateAsync(todoItem);
     }
@@ -305,9 +322,10 @@ public class TodoItemServiceTests
             .Returns(todoItem);
 
         // Act
-        await _todoItemService.PatchAsync(UserId, todoItemId, patchDto);
+        var result = await _todoItemService.PatchAsync(UserId, todoItemId, patchDto);
 
         // Assert
+        Assert.False(result.IsError);
         Assert.Equal(todoItem.IsCompleted, isCompleted);
     }
 }

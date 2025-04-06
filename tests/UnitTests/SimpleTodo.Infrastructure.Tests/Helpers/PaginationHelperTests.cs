@@ -1,8 +1,8 @@
 ﻿
 
-using SimpleTodo.Infrastructure.Helpers;
 using MockQueryable;
 using SimpleTodo.Domain.Contracts.Pagination;
+using SimpleTodo.Infrastructure.Helpers;
 
 namespace SimpleTodo.Infrastructure.Tests.Helpers;
 

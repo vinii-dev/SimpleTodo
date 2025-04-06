@@ -21,7 +21,7 @@ public class PasswordHasher : IPasswordHasher
     /// <returns>A string containing the hash and salt, separated by a hyphen.</returns>
     public string Hash(string password)
     {
-        if(string.IsNullOrWhiteSpace(password))
+        if (string.IsNullOrWhiteSpace(password))
             throw new ArgumentException("Password cannot be null or whitespace", nameof(password));
 
         byte[] salt = RandomNumberGenerator.GetBytes(SaltSize);

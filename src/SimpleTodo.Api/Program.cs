@@ -1,4 +1,3 @@
-using Microsoft.OpenApi.Models;
 using SimpleTodo.Api.Extensions;
 using SimpleTodo.Application;
 using SimpleTodo.Domain.Options;
@@ -26,6 +25,10 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwaggerDocumentation();
 }
+
+app.UseCors(x => x.AllowAnyOrigin()
+                  .AllowAnyMethod()
+                  .AllowAnyHeader());
 
 app.UseHttpsRedirection();
 app.UseAuthorization();

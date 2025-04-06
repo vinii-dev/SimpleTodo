@@ -1,6 +1,5 @@
 ﻿using SimpleTodo.Domain.Entities;
 using TestCommon.Consts;
-using TestCommon.Factory;
 
 namespace SimpleTodo.Domain.Tests.Entities;
 

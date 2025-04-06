@@ -15,7 +15,7 @@ public static class AuthExtensions
             {
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    ValidIssuer = tokenOptions.Issuer, 
+                    ValidIssuer = tokenOptions.Issuer,
                     ValidAudience = tokenOptions.Audience,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenOptions.SecretKey))
                 };

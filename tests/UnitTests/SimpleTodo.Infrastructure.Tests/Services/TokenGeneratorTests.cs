@@ -20,7 +20,7 @@ public class TokenGeneratorTests
 
         var now = DateTimeOffset.UtcNow;
         _fixedDateTime = now.UtcDateTime;
-        _mockTimeProvider.GetUtcNow().Returns(now); 
+        _mockTimeProvider.GetUtcNow().Returns(now);
     }
 
     [Fact]

@@ -69,7 +69,7 @@ public class PasswordHasherTests
     {
         // Arrange
         Action hash = () => _passwordHasher.Hash(input!);
-        
+
         // Act & Assert
         Assert.Throws<ArgumentException>(hash);
     }

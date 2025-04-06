@@ -15,7 +15,7 @@ public class PagedList<T>
     /// <param name="totalCount">The total number of items.</param>
     public PagedList(List<T> items, int currentPage, int pageSize, int totalCount)
     {
-        if(items.Count > pageSize)
+        if (items.Count > pageSize)
             throw new ArgumentException("Items count cannot be greater than page size.", nameof(items));
 
         Items = items;

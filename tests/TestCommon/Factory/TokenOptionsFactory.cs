@@ -1,5 +1,4 @@
-﻿using SimpleTodo.Domain.Entities;
-using SimpleTodo.Domain.Options;
+﻿using SimpleTodo.Domain.Options;
 using TestCommon.Consts;
 
 namespace TestCommon.Factory;

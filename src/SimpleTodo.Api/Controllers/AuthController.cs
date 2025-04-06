@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using SimpleTodo.Api.Extensions;
 using SimpleTodo.Domain.Contracts.Auth.Login;
 using SimpleTodo.Domain.Contracts.Auth.Register;
 using SimpleTodo.Domain.Interfaces.Services;
@@ -17,10 +18,14 @@ public class AuthController(IAuthService authService) : ControllerBase
         Description = "Authenticates a user and returns a JWT token upon successful login."
     )]
     [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Login([FromBody] LoginRequest request, CancellationToken cancellationToken)
     {
         var result = await authService.LoginAsync(request, cancellationToken);
-        return Ok(result);
+
+        return result.Match(
+            Ok,
+            ErrorOrExtensions.ToProblemDetails);
     }
 
     [HttpPost("register")]
@@ -29,10 +34,13 @@ public class AuthController(IAuthService authService) : ControllerBase
         Description = "Authenticates a user and returns a no content upon successful registration."
     )]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request, CancellationToken cancellationToken)
     {
-        await authService.RegisterAsync(request, cancellationToken);
-        return NoContent();
+        var result = await authService.RegisterAsync(request, cancellationToken);
+        return result.Match(
+            _ => NoContent(),
+            ErrorOrExtensions.ToProblemDetails);
     }
 }
 

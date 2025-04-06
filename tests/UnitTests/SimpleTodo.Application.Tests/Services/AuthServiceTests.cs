@@ -1,12 +1,12 @@
 ﻿using NSubstitute;
-using SimpleTodo.Application.Exceptions.Auth;
 using SimpleTodo.Application.Services;
 using SimpleTodo.Domain.Contracts.Auth.Login;
 using SimpleTodo.Domain.Contracts.Auth.Register;
 using SimpleTodo.Domain.Entities;
+using SimpleTodo.Domain.Errors;
 using SimpleTodo.Domain.Interfaces.Repositories;
 using SimpleTodo.Domain.Interfaces.Services;
-using System.Security.Authentication;
+using TestCommon.Asserts;
 using TestCommon.Consts;
 
 namespace SimpleTodo.Application.Tests.Services;
@@ -54,25 +54,26 @@ public class AuthServiceTests
         var result = await _authService.LoginAsync(request, CancellationToken.None);
 
         // Assert
-        Assert.Equal(generatedToken, result.Token);
+        Assert.False(result.IsError);
+        Assert.Equal(generatedToken, result.Value.Token);
     }
 
     [Fact]
-    public async Task LoginAsync_UserNotFound_ThrowsInvalidCredentialException()
+    public async Task LoginAsync_UserNotFound_ReturnInvalidCredentialsError()
     {
         // Arrange
         var request = new LoginRequest(UserConsts.Username, HashedPassword);
         _userRepositoryMock.GetByUsernameAsync(request.Username, Arg.Any<CancellationToken>())
             .Returns((User?)null);
 
-        Func<Task> loginAsync = async () => await _authService.LoginAsync(request, CancellationToken.None);
+        var result = await _authService.LoginAsync(request, CancellationToken.None);
 
         // Act & Assert
-        await Assert.ThrowsAsync<InvalidCredentialException>(loginAsync);
+        ErrorOrAssert.IsError(result, AuthErrors.InvalidCredentials);
     }
 
     [Fact]
-    public async Task LoginAsync_InvalidPassword_ThrowsInvalidCredentialException()
+    public async Task LoginAsync_InvalidPassword_ReturnInvalidCredentialError()
     {
         // Arrange
         var request = new LoginRequest(UserConsts.Username, HashedPassword);
@@ -84,10 +85,11 @@ public class AuthServiceTests
         _passwordHasherMock.Verify(request.Password, user.Password)
             .Returns(false);
 
-        Func<Task> loginAsync = async () => await _authService.LoginAsync(request, CancellationToken.None);
+        // Act
+        var result = await _authService.LoginAsync(request, CancellationToken.None);
 
-        // Act & Assert
-        await Assert.ThrowsAsync<InvalidCredentialException>(loginAsync);
+        // Assert
+        ErrorOrAssert.IsError(result, AuthErrors.InvalidCredentials);
     }
 
     [Fact]
@@ -103,9 +105,10 @@ public class AuthServiceTests
             .Returns(HashedPassword);
 
         // Act
-        await _authService.RegisterAsync(request, CancellationToken.None);
+        var result = await _authService.RegisterAsync(request, CancellationToken.None);
 
         // Assert
+        Assert.False(result.IsError);
         await _userRepositoryMock.Received().AddUserAsync(
             Arg.Is<User>(u => u.Username == request.Username && u.Password == HashedPassword),
             Arg.Any<CancellationToken>()
@@ -113,7 +116,7 @@ public class AuthServiceTests
     }
 
     [Fact]
-    public async Task RegisterAsync_UserExists_ThrowsUsernameAlreadyInUseException()
+    public async Task RegisterAsync_UserExists_ReturnUsernameAlreadyInUseError()
     {
         // Arrange
         var request = new RegisterRequest(UserConsts.Username, HashedPassword);
@@ -122,10 +125,11 @@ public class AuthServiceTests
         _userRepositoryMock.GetByUsernameAsync(request.Username, Arg.Any<CancellationToken>())
             .Returns(existingUser);
 
-        Func<Task> registerAsync = () => _authService.RegisterAsync(request, CancellationToken.None);
+        // Act
+        var result = await _authService.RegisterAsync(request, CancellationToken.None);
 
-        // Act & Assert
-        await Assert.ThrowsAsync<UsernameAlreadyInUseException>(registerAsync);
+        // Assert
+        ErrorOrAssert.IsError(result, AuthErrors.UsernameAlreadyInUse);
     }
 }
 

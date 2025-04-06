@@ -1,8 +1,9 @@
-﻿using SimpleTodo.Domain.Common;
+﻿using ErrorOr;
+using SimpleTodo.Domain.Common;
 using SimpleTodo.Domain.Contracts.Pagination;
 using SimpleTodo.Domain.DTOs.TodoItems;
 
-namespace SimpleTodo.Application.Services;
+namespace SimpleTodo.Domain.Interfaces.Services;
 
 /// <summary>
 /// Interface for TodoItem service operations.
@@ -15,8 +16,8 @@ public interface ITodoItemService
     /// <param name="userId">The user id that the to-do item will be associated with.</param>
     /// <param name="itemCreateDto">The DTO containing the details of the item to create.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>The ID of the created TodoItem.</returns>
-    Task<Guid> CreateAsync(Guid userId, TodoItemCreateDto itemCreateDto, CancellationToken cancellationToken = default);
+    /// <returns>The ID of the created TodoItem if the user exists; otherwise, <see cref="UserErrors.NotFound"/></returns>
+    Task<ErrorOr<Guid>> CreateAsync(Guid userId, TodoItemCreateDto itemCreateDto, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets a TodoItem by its ID.
@@ -24,8 +25,8 @@ public interface ITodoItemService
     /// <param name="userId">The ID of the user who owns the item.</param>
     /// <param name="id">The ID of the item to retrieve.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>The DTO of the retrieved TodoItem, or null if not found.</returns>
-    Task<TodoItemDto?> GetByIdAsync(Guid userId, Guid id, CancellationToken cancellationToken = default);
+    /// <returns>The TodoItemDto if the user and item exists; otherwise, <see cref="UserErrors.NotFound"/> or null.</returns>
+    Task<ErrorOr<TodoItemDto?>> GetByIdAsync(Guid userId, Guid id, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets a paginated list of TodoItems.
@@ -43,8 +44,9 @@ public interface ITodoItemService
     /// <param name="id">The ID of the item to update.</param>
     /// <param name="todoItemPatchDto">The DTO containing the properties to update.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
-    Task PatchAsync(Guid userId, Guid id, TodoItemPatch todoItemPatchDto, CancellationToken cancellationToken);
+    /// <returns>Returns a Updated result if the the user and the to-do item was found;
+    /// otherwise, <see cref="UserErrors.NotFound" /> or <see cref="TodoItemErrors.NotFound"/> ></returns>
+    Task<ErrorOr<Updated>> PatchAsync(Guid userId, Guid id, TodoItemPatch todoItemPatchDto, CancellationToken cancellationToken);
 
     /// <summary>
     /// Removes a TodoItem.
@@ -52,7 +54,9 @@ public interface ITodoItemService
     /// <param name="userId">The ID of the user who owns the item.</param>
     /// <param name="todoItemId">The ID of the item to remove.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    Task RemoveAsync(Guid userId, Guid todoItemId, CancellationToken cancellationToken = default);
+    /// <returns>Returns a Deleted result if the the user and the to-do item was found;
+    /// otherwise, <see cref="UserErrors.NotFound" /> or <see cref="TodoItemErrors.NotFound"/> ></returns>
+    Task<ErrorOr<Deleted>> RemoveAsync(Guid userId, Guid todoItemId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Updates a TodoItem.
@@ -61,5 +65,7 @@ public interface ITodoItemService
     /// <param name="todoItemId">The ID of the item to update.</param>
     /// <param name="itemUpdateDto">The DTO with the properties being updated.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    Task UpdateAsync(Guid userId, Guid todoItemId, TodoItemUpdateDto itemUpdateDto, CancellationToken cancellationToken = default);
+    /// <returns>Returns a Updated result if the the user and the to-do item was found;
+    /// otherwise, <see cref="UserErrors.NotFound" /> or <see cref="TodoItemErrors.NotFound"/> ></returns>
+    Task<ErrorOr<Updated>> UpdateAsync(Guid userId, Guid todoItemId, TodoItemUpdateDto itemUpdateDto, CancellationToken cancellationToken = default);
 }

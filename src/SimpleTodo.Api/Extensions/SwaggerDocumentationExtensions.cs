@@ -25,7 +25,7 @@ public static class SwaggerDocumentationExtensions
                 In = ParameterLocation.Header,
                 Type = SecuritySchemeType.Http,
                 Scheme = "Bearer",
-                Description = "JWT Authorization header using the Bearer scheme. \n\r Enter 'Bearer' [space] and then your token in the text input below.\n\r Example: \"Bearer 12345abcdef\""
+                Description = "JWT Authorization header using the Bearer scheme. \n\r Enter your token in the text input below.\n\r Example: \"12345abcdef\""
             });
 
             opt.AddSecurityRequirement(new OpenApiSecurityRequirement

@@ -1,5 +1,4 @@
 ﻿using SimpleTodo.Domain.Common;
-using System.Runtime.CompilerServices;
 
 namespace SimpleTodo.Domain.Entities;
 

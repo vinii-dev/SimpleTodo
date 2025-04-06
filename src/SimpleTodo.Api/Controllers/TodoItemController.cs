@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SimpleTodo.Application.Services;
+using SimpleTodo.Api.Extensions;
 using SimpleTodo.Domain.Common;
 using SimpleTodo.Domain.Contracts.Pagination;
 using SimpleTodo.Domain.DTOs.TodoItems;
+using SimpleTodo.Domain.Interfaces.Services;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Security.Claims;
 
@@ -34,10 +35,10 @@ public class TodoItemController(ITodoItemService todoItemService) : ControllerBa
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
         var todoItem = await todoItemService.GetByIdAsync(UserId, id, cancellationToken);
-        if (todoItem is null)
-            return NotFound();
 
-        return Ok(todoItem);
+        return todoItem.Match(
+            Ok,
+            ErrorOrExtensions.ToProblemDetails);
     }
 
     [HttpPost]
@@ -47,9 +48,11 @@ public class TodoItemController(ITodoItemService todoItemService) : ControllerBa
     public async Task<IActionResult> Create(
         [FromBody] TodoItemCreateDto todoItemCreateDto, CancellationToken cancellationToken)
     {
-        var todoItemId = await todoItemService.CreateAsync(UserId, todoItemCreateDto, cancellationToken);
+        var result = await todoItemService.CreateAsync(UserId, todoItemCreateDto, cancellationToken);
 
-        return Created($"/api/{todoItemId}", todoItemId);
+        return result.Match(
+            value => Created($"/api/{value}", value),
+            ErrorOrExtensions.ToProblemDetails);
     }
 
     [HttpPut("{id:guid}")]
@@ -60,9 +63,11 @@ public class TodoItemController(ITodoItemService todoItemService) : ControllerBa
     public async Task<IActionResult> Update(
         Guid id, [FromBody] TodoItemUpdateDto todoItemUpdateDto, CancellationToken cancellationToken)
     {
-        await todoItemService.UpdateAsync(UserId, id, todoItemUpdateDto, cancellationToken);
+        var result = await todoItemService.UpdateAsync(UserId, id, todoItemUpdateDto, cancellationToken);
 
-        return NoContent();
+        return result.Match(
+            _ => NoContent(),
+            ErrorOrExtensions.ToProblemDetails);
     }
 
     [HttpPatch("{id:guid}")]
@@ -70,11 +75,13 @@ public class TodoItemController(ITodoItemService todoItemService) : ControllerBa
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Update(
+    public async Task<IActionResult> Patch(
         Guid id, [FromBody] TodoItemPatch todoItemPatchDto, CancellationToken cancellationToken)
     {
-        await todoItemService.PatchAsync(UserId, id, todoItemPatchDto, cancellationToken);
+        var result = await todoItemService.PatchAsync(UserId, id, todoItemPatchDto, cancellationToken);
 
-        return NoContent();
+        return result.Match(
+            _ => NoContent(),
+            ErrorOrExtensions.ToProblemDetails);
     }
 }

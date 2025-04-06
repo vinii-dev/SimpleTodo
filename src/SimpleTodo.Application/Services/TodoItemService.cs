@@ -1,9 +1,10 @@
-﻿using SimpleTodo.Application.Exceptions.TodoItem;
-using SimpleTodo.Application.Exceptions.User;
+﻿using ErrorOr;
 using SimpleTodo.Domain.Common;
 using SimpleTodo.Domain.Contracts.Pagination;
 using SimpleTodo.Domain.DTOs.TodoItems;
+using SimpleTodo.Domain.Errors;
 using SimpleTodo.Domain.Interfaces.Repositories;
+using SimpleTodo.Domain.Interfaces.Services;
 using SimpleTodo.Domain.Mappings;
 
 namespace SimpleTodo.Application.Services;
@@ -40,15 +41,15 @@ public class TodoItemService(ITodoItemRepository todoItemRepository, IUserReposi
     /// <param name="userId">The ID of the user.</param>
     /// <param name="id">The ID of the TodoItem.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>The TodoItemDto if found; otherwise, null.</returns>
-    /// <exception cref="UserNotFoundException">Thrown if the user is not found.</exception>
-    public async Task<TodoItemDto?> GetByIdAsync(
+    /// <returns>The TodoItemDto if the user and item exists; otherwise, <see cref="UserErrors.NotFound"/> or <see cref="TodoItemErrors.NotFound"/>.</returns>
+    public async Task<ErrorOr<TodoItemDto?>> GetByIdAsync(
         Guid userId, Guid id, CancellationToken cancellationToken = default)
     {
-        await CheckIfUserExists(userId, cancellationToken);
+        if (!await userRepository.ExistsAsync(userId, cancellationToken))
+            return UserErrors.NotFound;
 
         var todoItem = await todoItemRepository.GetByIdAsync(id, cancellationToken);
-        if (todoItem == null || todoItem.UserId != userId) return null;
+        if (todoItem == null || todoItem.UserId != userId) return TodoItemErrors.NotFound;
 
         return todoItem.ToDto();
     }
@@ -59,12 +60,12 @@ public class TodoItemService(ITodoItemRepository todoItemRepository, IUserReposi
     /// <param name="userId">The user id that the to-do item will be associated with.</param>
     /// <param name="itemCreateDto">The DTO containing the details of the TodoItem to create.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>The ID of the created TodoItem.</returns>
-    /// <exception cref="UserNotFoundException">Thrown if the user is not found.</exception>
-    public async Task<Guid> CreateAsync(
+    /// <returns>The ID of the created TodoItem if the user exists; otherwise, <see cref="UserErrors.NotFound"/></returns>
+    public async Task<ErrorOr<Guid>> CreateAsync(
         Guid userId, TodoItemCreateDto itemCreateDto, CancellationToken cancellationToken = default)
     {
-        await CheckIfUserExists(userId, cancellationToken);
+        if (!await userRepository.ExistsAsync(userId, cancellationToken))
+            return UserErrors.NotFound;
 
         var todoItem = itemCreateDto.ToEntity(userId);
         await todoItemRepository.CreateAsync(todoItem, cancellationToken);
@@ -78,18 +79,21 @@ public class TodoItemService(ITodoItemRepository todoItemRepository, IUserReposi
     /// <param name="userId">The ID of the user.</param>
     /// <param name="todoItemId">The ID of the TodoItem to remove.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <exception cref="UserNotFoundException">Thrown if the user is not found.</exception>
-    /// <exception cref="TodoItemNotFoundException">Thrown if the TodoItem is not found or does not belong to the user.</exception>
-    public async Task RemoveAsync(
+    /// <returns>Returns a Deleted result if the the user and the to-do item was found;
+    /// otherwise, <see cref="UserErrors.NotFound" /> or <see cref="TodoItemErrors.NotFound"/> ></returns>
+    public async Task<ErrorOr<Deleted>> RemoveAsync(
         Guid userId, Guid todoItemId, CancellationToken cancellationToken = default)
     {
-        await CheckIfUserExists(userId, cancellationToken);
+        if (!await userRepository.ExistsAsync(userId, cancellationToken))
+            return UserErrors.NotFound;
 
         var todoItem = await todoItemRepository.GetByIdAsync(todoItemId, cancellationToken);
         if (todoItem == null || todoItem.UserId != userId)
-            throw new TodoItemNotFoundException();
+            return TodoItemErrors.NotFound;
 
         await todoItemRepository.RemoveAsync(todoItem, cancellationToken);
+
+        return Result.Deleted;
     }
 
     /// <summary>
@@ -99,19 +103,22 @@ public class TodoItemService(ITodoItemRepository todoItemRepository, IUserReposi
     /// <param name="todoItemId">The ID of the TodoItem to update.</param>
     /// <param name="itemUpdateDto">The DTO with the properties being updated.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <exception cref="UserNotFoundException">Thrown if the user is not found.</exception>
-    /// <exception cref="TodoItemNotFoundException">Thrown if the TodoItem is not found or does not belong to the user.</exception>
-    public async Task UpdateAsync(
+    /// <returns>Returns a Updated result if the the user and the to-do item was found;
+    /// otherwise, <see cref="UserErrors.NotFound" /> or <see cref="TodoItemErrors.NotFound"/> ></returns>
+    public async Task<ErrorOr<Updated>> UpdateAsync(
         Guid userId, Guid todoItemId, TodoItemUpdateDto itemUpdateDto, CancellationToken cancellationToken = default)
     {
-        await CheckIfUserExists(userId, cancellationToken);
+        if (!await userRepository.ExistsAsync(userId, cancellationToken))
+            return UserErrors.NotFound;
 
         var todoItem = await todoItemRepository.GetByIdAsync(todoItemId, cancellationToken);
         if (todoItem == null || todoItem.UserId != userId)
-            throw new TodoItemNotFoundException();
+            return TodoItemErrors.NotFound;
 
         todoItem.Update(itemUpdateDto.Title, itemUpdateDto.Description);
         await todoItemRepository.UpdateAsync(todoItem, cancellationToken);
+
+        return Result.Updated;
     }
 
     /// <summary>
@@ -121,16 +128,17 @@ public class TodoItemService(ITodoItemRepository todoItemRepository, IUserReposi
     /// <param name="todoItemId">The ID of the TodoItem to update.</param>
     /// <param name="itemPatchDto">The DTO containing the fields to update.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <exception cref="UserNotFoundException">Thrown if the user is not found.</exception>
-    /// <exception cref="TodoItemNotFoundException">Thrown if the TodoItem is not found or does not belong to the user.</exception>
-    public async Task PatchAsync(
+    /// <returns>Returns a Updated result if the the user and the to-do item was found;
+    /// otherwise, <see cref="UserErrors.NotFound" /> or <see cref="TodoItemErrors.NotFound"/> ></returns>
+    public async Task<ErrorOr<Updated>> PatchAsync(
         Guid userId, Guid todoItemId, TodoItemPatch itemPatchDto, CancellationToken cancellationToken = default)
     {
-        await CheckIfUserExists(userId, cancellationToken);
+        if (!await userRepository.ExistsAsync(userId, cancellationToken))
+            return UserErrors.NotFound;
 
         var todoItem = await todoItemRepository.GetByIdAsync(todoItemId, cancellationToken);
         if (todoItem == null || todoItem.UserId != userId)
-            throw new TodoItemNotFoundException();
+            return TodoItemErrors.NotFound;
 
         if (itemPatchDto.IsCompleted is bool isCompleted
             && todoItem.IsCompleted != isCompleted)
@@ -139,17 +147,7 @@ public class TodoItemService(ITodoItemRepository todoItemRepository, IUserReposi
         }
 
         await todoItemRepository.UpdateAsync(todoItem, cancellationToken);
-    }
 
-    /// <summary>
-    /// Checks if a user exists.
-    /// </summary>
-    /// <param name="userId">The ID of the user.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <exception cref="UserNotFoundException">Thrown if the user is not found.</exception>
-    private async Task CheckIfUserExists(Guid userId, CancellationToken cancellationToken)
-    {
-        if (!await userRepository.ExistsAsync(userId, cancellationToken))
-            throw new UserNotFoundException();
+        return Result.Updated;
     }
 }
