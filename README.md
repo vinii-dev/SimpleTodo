@@ -257,7 +257,8 @@ No `Program.cs` é registrado um middleware que pega esses retornos com erros e 
 O projeto utiliza **interceptors** para atualizar automaticamente propriedades relacionadas à auditoria das entidades, como `CreatedAt` e `UpdatedAt`.
 
 ### Diagrama do banco de dados
-[Diagrama do banco de dados](docs/images/database-diagram.png)
+![Diagrama do banco de dados](docs/images/database-diagram.png)
+
 ## Principais Tecnologias Utilizadas
 
 - [**ErrorOr**](https://github.com/amantinband/error-or) - Biblioteca para auxiliar a aplicação do Result Pattern
