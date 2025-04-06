@@ -61,8 +61,8 @@ public class PagedResourceTests
 
         // Assert
         Assert.Equal(expectedTotalPages, pagedList.TotalPages);
-        Assert.Equal(expectedHasPrevious, pagedList.IsPreviousPageExists);
-        Assert.Equal(expectedHasNext, pagedList.IsNextPageExists);
+        Assert.Equal(expectedHasPrevious, pagedList.HasPreviousPage);
+        Assert.Equal(expectedHasNext, pagedList.HasNextPage);
     }
 
 }

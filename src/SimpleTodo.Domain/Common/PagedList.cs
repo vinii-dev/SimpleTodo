@@ -57,10 +57,10 @@ public class PagedList<T>
     /// <summary>
     /// Gets a value indicating whether there is a previous page.
     /// </summary>
-    public bool IsPreviousPageExists => CurrentPage > 1;
+    public bool HasPreviousPage => CurrentPage > 1;
 
     /// <summary>
     /// Gets a value indicating whether there is a next page.
     /// </summary>
-    public bool IsNextPageExists => CurrentPage < TotalPages;
+    public bool HasNextPage => CurrentPage < TotalPages;
 }

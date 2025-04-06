@@ -84,4 +84,19 @@ public class TodoItemController(ITodoItemService todoItemService) : ControllerBa
             _ => NoContent(),
             ErrorOrExtensions.ToProblemDetails);
     }
+
+    [HttpDelete("{id:guid}")]
+    [SwaggerOperation(Summary = "Delete an existing TodoItem.")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Delete(
+        Guid id, CancellationToken cancellationToken)
+    {
+        var result = await todoItemService.RemoveAsync(UserId, id, cancellationToken);
+
+        return result.Match(
+            _ => NoContent(),
+            ErrorOrExtensions.ToProblemDetails);
+    }
 }
